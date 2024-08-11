@@ -1,7 +1,6 @@
 import streamlit as st
-import cv2
+from PIL import Image, ImageOps
 import pytesseract
-from PIL import Image
 import numpy as np
 
 # Configuración de pytesseract (solo si usas Tesseract)
@@ -32,10 +31,16 @@ elif picture is not None:
 if image is not None:
     if st.button("ESCANEAR"):
         st.image(image, caption="", use_column_width=True)
-        image_np = np.array(image)
-        gray_image = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
-        _, thresh_image = cv2.threshold(gray_image, 128, 255, cv2.THRESH_BINARY)
+        
+        # Convertir la imagen a escala de grises
+        gray_image = ImageOps.grayscale(image)
+        
+        # Convertir la imagen a un formato que pytesseract pueda procesar
+        thresh_image = gray_image.point(lambda x: 0 if x < 128 else 255, '1')
+        
+        # Usar pytesseract para extraer texto
         text = pytesseract.image_to_string(thresh_image)
+        
         st.subheader("2. TEXTO :")
         st.code(text)
 else:
